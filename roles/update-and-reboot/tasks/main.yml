@@ -1,0 +1,14 @@
+
+---
+- name: update system cache
+  shell: apt update
+
+- name: upgrade system 
+  shell: apt upgrade -y 
+
+- name: reboot 
+  shell: reboot      
+          
+
+
+

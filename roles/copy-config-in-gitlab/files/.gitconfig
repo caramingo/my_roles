@@ -1,0 +1,6 @@
+[user]
+        name = Сергей Бот
+        email = gitbot@ivtecon.ru
+
+[credential]
+        helper = store --file ~/.git-credentials

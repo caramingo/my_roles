@@ -1,0 +1,48 @@
+---
+# что то с репозиториями....403  Forbidden 
+
+- name: install soft for gitlab
+  apt:
+    name: 
+      -  curl
+      -  openssh-server
+      -  ca-certificates
+    
+- name: install postfix for gitlab
+  apt:
+    name: 
+      -  postfix
+    
+- name: add repository for gitlab
+  shell: curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.deb.sh | bash
+
+#- name: Download gitlab.sh
+#  ansible.builtin.get_url:
+ #   url: https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.deb.sh
+#    dest: /tmp/script.deb.sh
+
+#- name: add repository for gitlab
+#  shell: bash /tmp/script.deb.sh
+
+
+# kostul
+- name: remove gitlab ee repository
+  shell: rm /etc/apt/sources.list.d/gitlab_gitlab-ee.list
+
+
+- name: update system for gitlab
+  shell: apt update
+
+- name: show git version
+  shell: 'apt-cache madison gitlab-ce | grep 15.8.1'
+  register: command_output
+
+- debug: 
+    var: command_output.stdout_lines
+
+- name: install postgres
+  apt: 
+    name:
+      - gitlab-ce=15.8.1-ce.0
+        
+

@@ -1,0 +1,152 @@
+---
+# tasks file for debian12-k8s-install
+
+- name: install prerequare package
+  apt:
+    name: 
+      -  curl 
+      -  apt-transport-https
+      -  ca-certificates 
+      -  gnupg
+    update_cache: yes 
+
+- name: Create directory keyrings
+  ansible.builtin.file:
+    path: /etc/apt/keyrings 
+    state: directory
+    recurse: yes    
+ 
+- name: add gpg key
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/debian/gpg
+    dest: /etc/apt/keyrings/docker.asc
+
+- name: change chmod 
+  file: dest=/etc/apt/keyrings/docker.asc mode=a+r
+
+- name: add repository 
+  shell: 
+    cmd: echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+- name: install containerd
+  apt:
+    name: 
+      -  containerd.io
+    update_cache: yes 
+
+
+- name: Create directory containerd
+  ansible.builtin.file:
+    path: /etc/containerd 
+    state: directory
+    recurse: yes
+
+- name: create config 
+  shell: 
+    cmd: containerd config default | tee /etc/containerd/config.toml
+
+
+- name: enable SystemdCgroup in config  
+  replace:
+    path: /etc/containerd/config.toml
+    regexp: 'SystemdCgroup = false'
+    replace: 'SystemdCgroup = true'
+
+
+- name: Reload service containerd
+  systemd:
+      name: containerd
+      state: restarted
+
+
+- name: add repository gpg key for k8s
+  shell:  curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  args:
+    creates: "/etc/apt/keyrings/kubernetes-apt-keyring.gpg"
+
+- name: add repository for k8s 
+  shell: 
+    cmd: echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /' |  tee /etc/apt/sources.list.d/kubernetes.list
+
+- name: Change permissions for kubernetes.list
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/kubernetes.list
+    mode: '0644'
+
+- name: install  package for k8s 
+  apt:
+    name: 
+      -  kubeadm 
+      -  kubelet 
+      -  kubectl 
+      -  kubernetes-cni
+    update_cache: yes  
+
+- name: disable swap
+  shell: 
+    cmd: swapoff -a
+
+- name: Disable swap in /etc/fstab
+  replace:
+    path: /etc/fstab
+    regexp: '^(\s*)([^#\n]+\s+)(\w+\s+)swap(\s+.*)$'
+    replace: '#\1\2\3swap\4'     
+
+- name: Add br_netfilter module
+  community.general.modprobe:
+    name: br_netfilter
+    state: present    
+
+- name: enable ip forwarding in confing
+  replace:
+    path: /etc/sysctl.conf
+    regexp: '#net.ipv4.ip_forward=1'
+    replace: 'net.ipv4.ip_forward=1'    
+
+- name: enable ip forwarding
+  shell: 
+    cmd: sysctl -w net.ipv4.ip_forward=1
+
+- name: Check if kubeadm has already run
+  stat:
+    path: "/etc/kubernetes/pki/ca.key"
+  register: kubeadm_ca
+
+- name: Init cluster if needed
+  shell: 
+    cmd: kubeadm init --pod-network-cidr=10.244.0.0/16  
+  when: not kubeadm_ca.stat.exists
+  run_once: yes  
+
+- name: Create $HOME/.kube
+  ansible.builtin.file:
+    path: $HOME/.kube 
+    state: directory
+    recurse: yes    
+
+# not work no idea why
+#- name: Copy file with owner and permissions
+#  ansible.builtin.copy:
+#    src: /etc/kubernetes/admin.conf
+#    dest: $HOME/.kube/config
+
+- name: copy config in $home
+  shell: 
+    cmd: cp  /etc/kubernetes/admin.conf $HOME/.kube/config
+
+- name: Change kubeconfig file permission
+  file:
+    path: $HOME/.kube/config 
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"   
+
+- name: instal Flannel in k8s
+  shell: 
+    cmd: kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/v0.20.2/Documentation/kube-flannel.yml   
+
+- name: show kubectl get pods
+  command: 'kubectl get pods --all-namespaces'
+  register: command_output    
+
+- debug: 
+    var: command_output.stdout_lines     

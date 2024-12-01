@@ -1,0 +1,50 @@
+---
+# tasks file for preconfig
+
+- name: Create a directory backup directory
+  ansible.builtin.file:
+    path: /backup-directory/
+    state: directory
+    mode: '0755'
+
+- name: Create a sub directory week
+  ansible.builtin.file:
+    path: /backup-directory/week/
+    state: directory
+    mode: '0755'
+
+- name: Create a sub directory month
+  ansible.builtin.file:
+    path: /backup-directory/month/
+    state: directory
+    mode: '0755'
+
+- name: Create a sub directory year
+  ansible.builtin.file:
+    path: /backup-directory/year/
+    state: directory
+    mode: '0755'   
+
+- name: Copy rsync script file to host
+  copy:
+    src: /home/dmlog/work/ansible/roles/rsync-system/roles/rsync-system/files/rsync-system.sh  
+    dest: /stuff/server/configs/confbackup/
+
+- name: Copy rsync ignore list
+  copy:
+    src: /home/dmlog/work/ansible/roles/rsync-system/roles/rsync-system/files/rsync-ignore-list.txt
+    dest: /stuff/server/configs/confbackup/
+
+- name: Changing permision for rsync-system.sh
+  file: dest=/stuff/server/configs/confbackup/rsync-system.sh  mode=a+x
+
+- name: Add a line to /etc/crontab
+  ansible.builtin.lineinfile:
+    dest: /etc/crontab
+    line: "# Rsync all system"
+
+- name: Add a line to /etc/crontab
+  ansible.builtin.lineinfile:
+    dest: /etc/crontab
+    line: "#0 4 * * 7      root    /stuff/server/configs/confbackup/rsync-system.sh"
+ 

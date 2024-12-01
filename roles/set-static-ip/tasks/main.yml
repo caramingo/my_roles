@@ -1,0 +1,12 @@
+---
+- name: save yaml file to root direcory
+  shell: cp /etc/netplan/*.yaml  /root/ 
+
+- name: Copy yaml config to host
+  copy:
+    src: /home/dmlog/work/ansible/all-roles/roles/set-static-ip/files/00-installer-config.yaml
+    dest: /etc/netplan/
+
+- name: reboot host
+  shell: reboot  
+

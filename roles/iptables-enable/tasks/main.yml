@@ -1,0 +1,53 @@
+---
+# tasks file for iptables-enable
+#- name: Copy iptables default config
+#  copy:
+#    src: /home/dmlog/work/ansible/all-roles/roles/iptables-enable/files/iptables.rule
+#    dest: /etc/iptables-enable
+
+#- name: enable iptables rule
+#  command: iptables-restore < /etc/iptables-enable
+
+#- name: restore firewall state from a file
+#  community.general.iptables_state:
+#   ip_version: ipv4
+#    table: filter
+#    state: saved
+#    path: /etc/iptables-enable
+
+# flush rules
+- name: flush rules for input
+  command: /sbin/iptables -P INPUT ACCEPT
+
+- name: flush rules for forfawr
+  command: /sbin/iptables -P FORWARD ACCEPT
+
+- name: flush rules output
+  command: /sbin/iptables -P OUTPUT ACCEPT
+
+- name: flush all rules 
+  command: /sbin/iptables -F
+
+# load rules  
+
+- name: accept lo interface
+  command: /sbin/iptables -I INPUT -i lo -j ACCEPT
+
+- name: accept icmp
+  command: /sbin/iptables -I INPUT -p icmp -j ACCEPT
+
+- name: allow state tcp
+  command: /sbin/iptables -I INPUT -p tcp -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+- name: allow state upd
+  command: /sbin/iptables -I INPUT -p udp -m state --state RELATED,ESTABLISHED -j ACCEPT 
+
+- name: open 22 port fo input
+  command: /sbin/iptables -A INPUT -i {{ ansible_default_ipv4.interface }} -p TCP --dport 22 -j ACCEPT
+
+- name: open 80 port for inpt
+  command: /sbin/iptables -A INPUT -i {{ ansible_default_ipv4.interface }} -p TCP --dport 80 -j ACCEPT  
+
+- name: block input
+  command: /sbin/iptables  -P INPUT DROP
+

@@ -1,0 +1,21 @@
+---
+# tasks file for preconfig
+
+- name: Copy rsync script file to host
+  copy:
+    src: /home/dmlog/work/ansible/all-roles/roles/rsync-system-once-month/files/rsync-system-once-month.sh  
+    dest: /stuff/server/configs/confbackup/
+
+- name: Changing permision for rsync-system.sh
+  file: dest=/stuff/server/configs/confbackup/rsync-system-once-month.sh  mode=a+x
+
+- name: Add a line to /etc/crontab
+  ansible.builtin.lineinfile:
+    dest: /etc/crontab
+    line: "# Rsync all system firs day of month"
+
+- name: Add a line to /etc/crontab
+  ansible.builtin.lineinfile:
+    dest: /etc/crontab
+    line: "#0 2 1 * *      root    /stuff/server/configs/confbackup/rsync-system-once-month.sh"
+ 

@@ -1,0 +1,32 @@
+---
+- name: install prerequare package for ubuntu 18
+  apt:
+    name: 
+      -  ca-certificates
+      -  curl 
+      -  gnupg 
+      -  lsb-release
+      -  apt-transport-https
+      -  ca-certificates 
+      -  software-properties-common
+    update_cache: yes 
+ 
+- name: add gpg key 
+  shell: 
+    cmd: curl -fsSL https://download.docker.com/linux/ubuntu/gpg |  apt-key add -
+
+
+- name: Add specified repository into sources list using 
+  ansible.builtin.apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable
+    state: present
+
+
+
+- name: install docker an docker-compose
+  apt:
+    name: 
+      -  docker-ce
+      -  docker-compose
+    update_cache: yes 
+

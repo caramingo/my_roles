@@ -1,0 +1,38 @@
+
+---
+- name: Added node eporter users 
+  ansible.builtin.user:
+    name: node_exporter
+    shell: /bin/false
+
+- name: Copy node_exporter
+  copy:
+    src: /home/dmlog/work/ansible/all-roles/roles/node-exporter-deploy/files/node_exporter
+    dest: /usr/local/bin
+
+- name: Changing permision for node_exporter
+  file: dest=/usr/local/bin/node_exporter  mode=a+x
+
+- name: Change file ownership, group 
+  ansible.builtin.file:
+    path: /usr/local/bin/node_exporter
+    owner: node_exporter   
+
+- name: Copy node_exporter.service
+  copy:
+    src: /home/dmlog/work/ansible/all-roles/roles/node-exporter-deploy/files/node_exporter.service
+    dest: /etc/systemd/system/
+
+- name: reload systemd
+  command: systemctl daemon-reload    
+
+- name: start  node
+  command: systemctl start node_exporter
+
+- name: systemctl status node_exporter
+  command: 'systemctl status node_exporter'
+  register: command_output
+
+- debug: 
+    var: command_output.stdout_lines  
+

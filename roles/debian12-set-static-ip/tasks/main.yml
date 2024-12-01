@@ -1,0 +1,19 @@
+---
+# tasks file for debian12-set-static-ip
+
+- name: save yaml file to root direcory
+  shell: cp /etc/network/interfaces  /root/ 
+
+- name: copy yaml config to host
+  copy:
+    src: ./files/interfaces
+    dest: /etc/network/interfaces
+
+#- name: reboot host
+#  shell: reboot
+
+- name: Restarting Network to take effect new IP Address
+  become: yes 
+  service:
+    name: networking
+    state: restarted

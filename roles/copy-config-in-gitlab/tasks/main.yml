@@ -1,0 +1,57 @@
+
+---
+- name: install soft
+  apt:
+    name: 
+      -  ruby
+      -  git
+    update_cache: yes 
+
+- name: Create directory recursive
+  ansible.builtin.file:
+    path: /stuff/server/configs/confbackup/ 
+    state: directory
+    recurse: yes
+
+- name: Create directory 
+  ansible.builtin.file:
+    path: /stuff/server/configs/backups 
+    state: directory
+              
+- name: Copy backup.sh
+  copy:
+    src: /home/dmlog/work/ansible/all-roles/roles/copy-config-in-gitlab/files/backuper.sh
+    dest: /stuff/server/configs/confbackup/
+
+- name: Copy backup.rb
+  copy:
+    src: /home/dmlog/work/ansible/all-roles/roles/copy-config-in-gitlab/files/backuper.rb
+    dest: /stuff/server/configs/confbackup/
+
+- name: Changing permision for backup.sh
+  file: dest=/stuff/server/configs/confbackup/backuper.sh  mode=a+x
+
+- name: Copy .gitconfig
+  copy:
+    src: /home/dmlog/work/ansible/all-roles/roles/copy-config-in-gitlab/files/.gitconfig
+    dest: /root/
+
+- name: Copy .git-credentials
+  copy:
+    src: /home/dmlog/work/ansible/all-roles/roles/copy-config-in-gitlab/files/.git-credentials
+    dest: /root/   
+
+
+- name: Add caprion to /etc/crontab
+  ansible.builtin.lineinfile:
+    dest: /etc/crontab
+    line: "# Backup config to gitlab server"
+
+- name: Add script to /etc/crontab
+  ansible.builtin.lineinfile:
+    dest: /etc/crontab
+    line: "#0 21 * * *       root    /stuff/server/configs/confbackup/backuper.sh"
+
+# после выполнения нужно руками прописать имя сервера под которым сливаем конфиги в /stuff/server/configs/confbackup/backuper.sh
+# руками добавить в  /root/.git-credentials креденшелы
+# руками для проверки запустить /stuff/server/configs/confbackup/backuper.sh

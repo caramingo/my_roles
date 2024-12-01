@@ -1,0 +1,61 @@
+---
+# tasks file for postgres14-ubuntu22
+- name: install postgres14
+  apt:
+    name: 
+      -  postgresql-14
+    update_cache: yes 
+ 
+- name: Copy default postgres config
+  command: cp /etc/postgresql/14/main/postgresql.conf /root/  
+
+- name: Replace localhost
+  ansible.builtin.replace:
+    path: /etc/postgresql/14/main/postgresql.conf
+    regexp: 'localhost'
+    replace: '*'
+
+- name: Replace #listen_addresses
+  ansible.builtin.replace:
+    path: /etc/postgresql/14/main/postgresql.conf
+    regexp: '#listen_addresses'
+    replace: 'listen_addresses'
+
+
+- name: Replace ssl = on
+  ansible.builtin.replace:
+    path: /etc/postgresql/14/main/postgresql.conf
+    regexp: 'ssl = on'
+    replace: '#ssl = on'
+
+
+- name: Replace ssl_cert_file
+  ansible.builtin.replace:
+    path: /etc/postgresql/14/main/postgresql.conf
+    regexp: 'ssl_cert_file'
+    replace: '#ssl_cert_file'
+
+- name: Replace ssl_key_file
+  ansible.builtin.replace:
+    path: /etc/postgresql/14/main/postgresql.conf
+    regexp: 'ssl_key_file'
+    replace: '#ssl_key_file'
+
+- name: start  postgres
+  command: systemctl start postgresql    
+
+
+- name: check status postgres
+  command: 'systemctl status postgresql'
+  register: command_output
+
+- debug: 
+    var: command_output.stdout_lines 
+    
+- name: check port 5432
+  #command: 'netstat -tulpan | grep 5432'
+  command: 'ss -lnt'
+  register: command_output
+
+- debug: 
+    var: command_output.stdout_lines     

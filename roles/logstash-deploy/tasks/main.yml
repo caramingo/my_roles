@@ -1,0 +1,28 @@
+---
+# tasks file for filebeat-deploy
+
+- name: Copy logstash-8.3.3-amd64.deb
+  copy:
+    src: /home/path_to_files/logstash-8.3.3-amd64.deb
+    dest: /tmp/logstash-8.3.3-amd64.deb
+
+
+- name: Install logstash-8.3.3-amd64.deb
+  ansible.builtin.apt:
+    deb: /tmp/logstash-8.3.3-amd64.deb
+
+- name: Copy default filebeat config
+  command: cp /etc/logstash/logstash.yml /root/ 
+
+- name: Enable service logstash
+  ansible.builtin.systemd:
+    name: logstash
+    enabled: true
+
+- name: start logstash
+  systemd:
+    name: logstash
+    state: started
+    enabled: yes      
+
+

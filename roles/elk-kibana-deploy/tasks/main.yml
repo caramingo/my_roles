@@ -1,0 +1,89 @@
+---
+# tasks file for elk
+- name: install default-jdk
+  apt:
+    name: 
+      -  default-jdk
+      -  openjdk-11-jdk
+    update_cache: yes 
+
+
+- name: Copy elasticsearch-8.3.3-amd64.deb
+  copy:
+    src: /home/dmlog/work/ansible/all-roles/roles/elk-kibana-deploy/files/elasticsearch-8.3.3-amd64.deb
+    dest: /tmp/elasticsearch-8.3.3-amd64.deb  
+
+
+- name: Install elasticsearch-8.3.3-amd64.deb 
+  ansible.builtin.apt:
+    deb: /tmp/elasticsearch-8.3.3-amd64.deb  
+
+- name: Just force systemd to reread configs 
+  ansible.builtin.systemd:
+    daemon_reload: true       
+
+- name: Enable service elasticsearch
+  ansible.builtin.systemd:
+    name: elasticsearch
+    enabled: true
+
+- name: start elasticsearch
+  systemd:
+    name: elasticsearch
+    state: started
+    enabled: yes     
+
+- name: Copy default elk config
+  command: cp /etc/elasticsearch/elasticsearch.yml /root/  
+
+- name: Copy elk config
+  copy:
+    src: /home/dmlog/work/ansible/all-roles/roles/elk-kibana-deploy/files/elasticsearch.yml
+    dest: /etc/elasticsearch/elasticsearch.yml
+     
+
+- name: systemctl restart elasticsearch
+  command: systemctl restart elasticsearch 
+
+ 
+# kibana
+
+- name: Copy kibana-8.3.3-amd64.deb
+  copy:
+    src: /home/dmlog/work/ansible/all-roles/roles/elk-kibana-deploy/files/kibana-8.3.3-amd64.deb
+    dest: /tmp/kibana-8.3.3-amd64.deb  
+
+
+- name: Install kibana-8.3.3-amd64.deb
+  ansible.builtin.apt:
+    deb: /tmp/kibana-8.3.3-amd64.deb     
+
+- name: Just force systemd to reread configs 
+  ansible.builtin.systemd:
+    daemon_reload: true   
+
+- name: Copy default kibana config
+  command: cp /etc/kibana/kibana.yml /root/  
+
+- name: Copy elk config
+  copy:
+    src: /home/dmlog/work/ansible/all-roles/roles/elk-kibana-deploy/files/kibana.yml
+    dest: /etc/kibana/kibana.yml
+
+- name: Enable service elasticsearch
+  ansible.builtin.systemd:
+    name: kibana
+    enabled: true
+
+- name: start elasticsearch
+  systemd:
+    name: kibana
+    state: started
+    enabled: yes   
+
+
+# show service
+# systemctl status  elasticsearch
+# systemctl status logstash
+# systemctl status kibana
+# systemctl status  filebeat

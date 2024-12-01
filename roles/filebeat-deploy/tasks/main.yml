@@ -1,0 +1,31 @@
+---
+# tasks file for filebeat-deploy
+
+- name: Copy filebeat-8.4.0-amd64.deb
+  copy:
+    src: /home/dmlog/work/ansible/all-roles/roles/filebeat-deploy/files/filebeat-8.4.0-amd64.deb
+    dest: /tmp/filebeat-8.4.0-amd64.deb 
+
+
+- name: Install filebeat-8.4.0-amd64.deb
+  ansible.builtin.apt:
+    deb: /tmp/filebeat-8.4.0-amd64.deb
+
+- name: Copy default filebeat config
+  command: cp /etc/filebeat/filebeat.yml /root/  
+
+- name: Copy filebeat config
+  copy:
+    src: /home/dmlog/work/ansible/all-roles/roles/filebeat-deploy/files/filebeat.yml
+    dest: /etc/filebeat/filebeat.yml 
+
+- name: Enable service filebeat
+  ansible.builtin.systemd:
+    name: elasticsearch
+    enabled: true
+
+- name: start filebeat
+  systemd:
+    name: elasticsearch
+    state: started
+    enabled: yes       

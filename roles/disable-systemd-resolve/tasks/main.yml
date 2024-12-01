@@ -1,0 +1,39 @@
+---
+- name: stop systemd-resolver
+  command: service systemd-resolved stop
+
+- name: disable systemd-resolver
+  command: systemctl disable systemd-resolved.service 
+
+- name: Delete existing dist folder
+  file:
+    path: "/etc/resolv.conf "
+    state: absent
+
+- name: Touch a file
+  ansible.builtin.file:
+    path: /etc/resolv.conf
+    state: touch
+  
+
+- name: Add a line 
+  ansible.builtin.lineinfile:
+    path: /etc/resolv.conf
+    line: nameserver 8.8.8.8
+    create: yes
+
+#- name: Ansible replace string example
+#  replace:
+#    path: /etc/resolv.conf 
+#    regexp: 'nameserver 127.0.0.53'
+#    replace: "nameserver 8.8.8.8"
+
+#- name: add new nameserver in conf
+#  command: echo "nameserver 87.255.238.75" >  /etc/resolv.conf  
+
+- name: show nameservers
+  command: 'cat /etc/resolv.conf'
+  register: command_output
+
+- debug: 
+    var: command_output.stdout_lines  

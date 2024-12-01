@@ -1,0 +1,39 @@
+---
+- name: install zabbix agent
+  apt:
+    name: 
+      -  zabbix-agent
+    update_cache: yes 
+ 
+#- name: Copy default zabbix config
+#  copy:
+#    src: /etc/zabbix/zabbix_agentd.conf
+#    dest: /root/
+
+#- name: Remove default config
+#  ansible.builtin.file:
+#    path: /etc/zabbix/zabbix_agentd.conf
+#    state: absent
+
+- name: Copy new zabbix config
+  copy:
+    src: /home/dmlog/work/ansible/all-roles/roles/zabbix-agent-install/files/zabbix_agentd.conf
+    dest: /etc/zabbix/zabbix_agentd.conf
+
+- name: Creating log file
+  file:
+    path: /var/log/zabbix_agentd.log
+    state: touch
+
+
+- name: Change file ownership, group for log file
+  ansible.builtin.file:
+    path: /var/log/zabbix_agentd.log
+    owner: zabbix      
+
+- name: check status zabbix agent
+  command: '/etc/init.d/zabbix-agent status'
+  register: command_output
+
+- debug: 
+    var: command_output.stdout_lines     

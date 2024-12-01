@@ -1,0 +1,34 @@
+
+---
+- name: install soft
+  apt:
+    name: 
+      -  ifupdown
+      -  net-tools
+      -  mc
+      -  screen
+    update_cache: yes 
+ 
+- name: remove package
+  apt:
+    name: 
+      -  cloud-init
+      -  snapd
+      -  avahi-utils
+      -  avahi-daemon
+    state: absent
+    purge: yes
+
+- name: delete clouds directory
+  file:
+    state: absent
+    path: /var/lib/cloud/
+
+- name: delete clouds directory
+  file:
+    state: absent
+    path: /etc/cloud/    
+          
+
+
+

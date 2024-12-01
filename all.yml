@@ -1,0 +1,25 @@
+---
+-  name: my roles
+   hosts: servers
+   become: yes
+   roles:
+#     - rsync-system
+#      - set-static-ip
+#      - prepare-ubuntu    
+#       - update-and-reboot  
+#      - gitlab-deploy 
+#       - docker-deploy
+#      - copy-config-in-gitlab
+#      - node-exporter-deploy
+#      - rsync-system-once-month
+#      - zabbix-agent-install
+#      - postgres12-ubuntu20
+#      - grafana-ubuntu20
+#      - elk-kibana-deploy
+#      - filebeat-deploy
+#      - logstash-deploy
+#       - iptables-enable
+#      - disable-systemd-resolve  
+#     - debian12-k8s-install
+     -  debian12-k8s-work-node-setup
+#     -  debian12-set-static-ip
